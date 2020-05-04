@@ -150,6 +150,5 @@ dmypy.json
 
 
 # all data files
-**/data/**/*.pkl
-**/data/**/*.csv
-**/models/*.model
+**/data/
+**/models/

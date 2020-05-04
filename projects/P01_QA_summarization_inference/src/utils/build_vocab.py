@@ -1,8 +1,20 @@
+import numpy as np
 import pandas as pd 
 from os import path
 from ast import literal_eval
 from itertools import chain
 from collections import Counter
+import sys
+from pathlib import Path
+
+
+def peek_lines(file_path, n):
+    lines = []
+    with open(file_path, encoding='utf-8') as f:
+        for _ in range(n):
+            lines.append(f.readline().strip('\n'))
+        return lines
+
 
 def get_all_words(train_pkl_path, test_pkl_path):
     # load data
@@ -52,16 +64,26 @@ def save_vocab(vocab, save_path):
 
 
 if __name__ == "__main__":
-    data_path = './projects/01_QA_summarization_inference/data/'
-    train_pkl_path = data_path + 'processed/train_cut_clear.pkl'
-    test_pkl_path = data_path + 'processed/test_cut_clear.pkl'
-    vocab_path = data_path + 'processed/vocab.txt'
+    # import ReadConfig
+    config_path = str(Path(__file__).resolve().parent.parent.parent) 
+    if config_path not in sys.path:
+        sys.path.append(config_path)
+    from config.readconfig import ReadConfig
+
+    # get data path
+    loc_path = ReadConfig()
+    train_path = loc_path.get_path('train')
+    test_path = loc_path.get_path('test')
+    vocab_path = loc_path.get_path('vocab')
 
     # collect all words
-    words = get_all_words(train_pkl_path, test_pkl_path)
-    # build
+    words = get_all_words(train_path, test_path)
+
+    # build vocabualy
     vocab, _ = build_vocab(words)
-    # save
+
+    # save vocabualy
     save_vocab(vocab, vocab_path)
+
 
 
