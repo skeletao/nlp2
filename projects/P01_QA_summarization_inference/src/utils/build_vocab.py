@@ -1,26 +1,14 @@
-import numpy as np
-import pandas as pd 
-from os import path
-from ast import literal_eval
+import pandas as pd
 from itertools import chain
 from collections import Counter
-import sys
-from pathlib import Path
-
-
-def peek_lines(file_path, n):
-    lines = []
-    with open(file_path, encoding='utf-8') as f:
-        for _ in range(n):
-            lines.append(f.readline().strip('\n'))
-        return lines
+from projects.P01_QA_summarization_inference.config.readconfig import ReadConfig
 
 
 def get_all_words(train_pkl_path, test_pkl_path):
     # load data
     train = pd.read_pickle(train_pkl_path)
     test = pd.read_pickle(test_pkl_path)
-    # if save in pickle type file, no need this convertion
+    # if save in pickle type file, no need this conversion
     # train[train.columns[-2:]] = train[train.columns[-2:]].applymap(literal_eval)
     # test[test.columns[-1]] = test[test.columns[-1]].apply(literal_eval)
 
@@ -53,6 +41,7 @@ def build_vocab(words, sort=True, min_count=0, lower=False):
             vocab.append((word, i))
             reverse_vocab.append((i, word))
 
+    print('Build vocabulary: {len(vocab) words}')
     return vocab, reverse_vocab
 
 
@@ -64,12 +53,6 @@ def save_vocab(vocab, save_path):
 
 
 if __name__ == "__main__":
-    # import ReadConfig
-    config_path = str(Path(__file__).resolve().parent.parent.parent) 
-    if config_path not in sys.path:
-        sys.path.append(config_path)
-    from config.readconfig import ReadConfig
-
     # get data path
     loc_path = ReadConfig()
     train_path = loc_path.get_path('train')
@@ -79,10 +62,10 @@ if __name__ == "__main__":
     # collect all words
     words = get_all_words(train_path, test_path)
 
-    # build vocabualy
+    # build vocabulary
     vocab, _ = build_vocab(words)
 
-    # save vocabualy
+    # save vocabulary
     save_vocab(vocab, vocab_path)
 
 

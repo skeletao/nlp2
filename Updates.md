@@ -43,6 +43,13 @@
      Found 120320/120320 words in: fasttest.model
      ```
 
-     
 
-  
+
+
+#### 2020-5-21 17:47:07
+
+##### Code
+
+- Finish seq2seq baseline; functional run with small sample size can pass
+- Full data run and hyper parameters study on going...
+

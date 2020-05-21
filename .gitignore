@@ -150,5 +150,7 @@ dmypy.json
 
 
 # all data files
-**/data/
-**/models/
+**/data/*
+!**/data/output/
+**/models/*
+!**/models/seq2seq/

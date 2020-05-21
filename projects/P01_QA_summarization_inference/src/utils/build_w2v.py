@@ -1,12 +1,12 @@
 import numpy as np 
 import pandas as pd 
-from os import path
 from gensim.models.word2vec import LineSentence
 from gensim.models import Word2Vec
 from gensim.models.fasttext import FastText
 from tqdm import tqdm
-import sys
 from pathlib import Path
+from projects.P01_QA_summarization_inference.config.readconfig import ReadConfig
+from projects.P01_QA_summarization_inference.src.utils.data_utils import dump_pkl
 
 
 def gen_w2v_file(train_path, test_path, sentences_path):
@@ -20,6 +20,7 @@ def gen_w2v_file(train_path, test_path, sentences_path):
         for words in sentences:
             s = ' '.join(words) + '\n'
             f.write(s)
+
 
 def build_w2v(sentences_path, size=256, min_count=5, iter=5):
     sentences = LineSentence(sentences_path)
@@ -65,23 +66,24 @@ def read_vocab(vocab_path):
 
 def build_embedding(vocab_path, model_path, model_type='Word2Vector'):
     # load model
+    model = None
     if model_type == 'Word2Vector':
         model = Word2Vec.load(model_path)
     elif model_type == 'FastText':
         model = FastText.load(model_path)
 
-    # generage dict: index to vector; index is based on vocabulay
+    # generate dict: index to vector; index is based on vocabulary
     w2i, _ = read_vocab(vocab_path)
     vocab_size = len(w2i)  
     vector_size = model.vector_size
     embedding = {}
     count = 0
-    for v, i in w2i.items():
+    for v in w2i.keys():
         try:
-            embedding[i] = model[v]
+            embedding[v] = model[v]
             count = count + 1
         except:
-            embedding[i] = np.random.uniform(-0.25, 0.25, vector_size).astype(np.float32)
+            embedding[v] = np.random.uniform(-0.25, 0.25, vector_size).astype(np.float32)
 
     print(f"Found {count}/{vocab_size} words in: {Path(model_path).name}")
     return embedding
@@ -94,7 +96,7 @@ def load_tencent_embedding(vocab_path, model_path):
     with open(model_path, encoding='utf-8') as f:
         header = f.readline()
         model_vocab_size, model_vector_size = map(int, header.strip().split())
-        embedding = {i: np.random.uniform(-0.25, 0.25, model_vector_size) for i in range(vocab_size)}
+        embedding = {w: np.random.uniform(-0.25, 0.25, model_vector_size) for w in w2i.keys()}
 
         for _ in tqdm(range(model_vocab_size)):
             line = f.readline()
@@ -102,8 +104,7 @@ def load_tencent_embedding(vocab_path, model_path):
             word = wv[0]
             if word in w2i:
                 try:
-                    index = w2i[wv[0]]
-                    embedding[index] = np.asarray(wv[1:], dtype=np.float32)
+                    embedding[word] = np.asarray(wv[1:], dtype=np.float32)
                     count = count + 1
                 except:
                     print(line)
@@ -115,19 +116,10 @@ def load_tencent_embedding(vocab_path, model_path):
 
 
 def save_embedding(embedding, embedding_path):
-    with open(embedding_path, 'w', encoding='utf-8') as f:
-        for i, vector in embedding.items():
-            s = str(i) + ' ' + ' '.join(map(str, vector.tolist()))+'\n'
-            f.write(s)
+    dump_pkl(embedding, embedding_path, over_write=True)
 
 
 if __name__ == "__main__":
-    # import ReadConfig
-    config_path = str(Path(__file__).resolve().parent.parent.parent) 
-    if config_path not in sys.path:
-        sys.path.append(config_path)
-    from config.readconfig import ReadConfig
-
     # get data path
     loc_path = ReadConfig()
     train_path = loc_path.get_path('train')
@@ -140,7 +132,6 @@ if __name__ == "__main__":
     w2v_embedding_path = loc_path.get_path('w2v_embedding')
     ft_embedding_path = loc_path.get_path('ft_embedding')
     tencent_embedding_path = loc_path.get_path('tencent_embedding')
-
 
     # prepare sentences for gensim models
     gen_w2v_file(train_path, test_path, sentences_path)

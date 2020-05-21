@@ -5,7 +5,7 @@ from pathlib import Path
 class ReadConfig:
     """Read and parse config.ini"""
 
-    def  __init__(self, file_path=None):
+    def __init__(self, file_path=None):
         if file_path:
             conf_path = file_path
         else:
@@ -18,6 +18,7 @@ class ReadConfig:
         loc_path = self.cf.get('Paths', param)
         root_path = Path(__file__).resolve().parent.parent.as_posix()
         return root_path+loc_path
+
 
 if __name__ == "__main__":
     test = ReadConfig()

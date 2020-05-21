@@ -3,10 +3,8 @@ import jieba
 from jieba import posseg
 from hanziconv import HanziConv
 from functools import reduce
-from ast import literal_eval
 import re
-import sys
-from pathlib import Path
+from projects.P01_QA_summarization_inference.config.readconfig import ReadConfig
 
 
 def remove_special_char(sentence):
@@ -40,7 +38,7 @@ def read_stop_words(stop_words_path):
     words = set(['\u3000', '\u81a8', '\u5316', '\u98df', '\u54c1', '\xa0', '\u00a0', '\u2002', '\u2003'])
     with open(stop_words_path, encoding='utf-8') as f:
         for line in f:
-            # words.add(line.strip()) dosen't work, it will remove ' ' this speical stop word
+            # words.add(line.strip()) doesn't work, it will remove ' ' this special stop word
             words.add(line.strip('\n'))
     return words
 
@@ -86,18 +84,33 @@ def clear_file(train, test, stop_words_path):
     return train, test
 
 
-def save_data(train, test, train_path, test_path):
+def save_data(train, test, train_path, test_path, train_set_x_path, train_set_y_path, test_set_x_path):
     train.to_pickle(train_path)
     test.to_pickle(test_path)
 
+    train_x = train.iloc[:, -1].tolist()
+    train_y = train.iloc[:, -2].tolist()
+    test_x = test.iloc[:, -1].tolist()
+
+    train_size = len(train_x)
+    test_size = len(test_x)
+
+    with open(train_set_x_path, 'w', encoding='utf-8') as fx, \
+            open(train_set_y_path, 'w', encoding='utf-8') as fy, \
+            open(test_set_x_path, 'w', encoding='utf-8') as f:
+        for i in range(train_size):
+            line_x = ' '.join(train_x[i]) + '\n'
+            line_y = ' '.join(train_y[i]) + '\n'
+            fx.write(line_x)
+            fy.write(line_y)
+            if i < test_size:
+                line = ' '.join(test_x[i]) + '\n'
+                f.write(line)
+
+    print(f'Save {train_size} train data and {test_size} test data')
+
 
 if __name__ == "__main__":
-    # import ReadConfig
-    config_path = str(Path(__file__).resolve().parent.parent.parent) 
-    if config_path not in sys.path:
-        sys.path.append(config_path)
-    from config.readconfig import ReadConfig
-
     # get data path
     loc_path = ReadConfig()
     train_raw_path = loc_path.get_path('train_raw')
@@ -105,6 +118,9 @@ if __name__ == "__main__":
     stop_words_path = loc_path.get_path('stop_words')
     train_path = loc_path.get_path('train')
     test_path = loc_path.get_path('test')
+    train_set_x_path = loc_path.get_path('train_set_x')
+    train_set_y_path = loc_path.get_path('train_set_y')
+    test_set_x_path = loc_path.get_path('test_set_x')
 
     # cut 
     train, test = cut_file(train_raw_path, test_raw_path)
@@ -113,4 +129,4 @@ if __name__ == "__main__":
     train, test = clear_file(train, test,  stop_words_path)
 
     # save
-    save_data(train, test, train_path, test_path)
+    save_data(train, test, train_path, test_path, train_set_x_path, train_set_y_path, test_set_x_path)
