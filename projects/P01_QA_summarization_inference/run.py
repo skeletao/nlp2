@@ -1,6 +1,5 @@
 # coding=utf-8
 import sys
-from os import path
 import tensorflow as tf
 from pathlib import Path
 import argparse

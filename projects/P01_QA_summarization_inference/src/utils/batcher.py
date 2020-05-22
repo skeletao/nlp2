@@ -162,7 +162,7 @@ def example_generator(vocab, train_x_path, train_y_path, test_x_path, max_enc_le
         dataset_train_x = tf.data.TextLineDataset(train_x_path)
         dataset_train_y = tf.data.TextLineDataset(train_y_path)
         train_dataset = tf.data.Dataset.zip((dataset_train_x, dataset_train_y))
-        # train_dataset = train_dataset.shuffle(1000, reshuffle_each_iteration=True).repeat()
+        train_dataset = train_dataset.shuffle(1000, reshuffle_each_iteration=True).repeat()
 
         for raw_record in train_dataset:
             article = raw_record[0].numpy().decode("utf-8")
@@ -275,32 +275,31 @@ def batch_generator(generator, vocab, train_x_path, train_y_path,
                                                  "sample_decoder_pad_mask": [None],
                                                  "sample_encoder_pad_mask": [None],
                                              })
-
     dataset = dataset.padded_batch(batch_size,
                                    padded_shapes=({"enc_len": [],
-                                                   "enc_input": [None],
-                                                   "enc_input_extend_vocab": [None],
-                                                   "article_oovs": [None],
-                                                   "dec_input": [max_dec_len],
-                                                   "target": [max_dec_len],
-                                                   "dec_len": [],
-                                                   "article": [],
-                                                   "abstract": [],
-                                                   "abstract_sents": [None],
-                                                   "sample_decoder_pad_mask": [max_dec_len],
-                                                   "sample_encoder_pad_mask": [None]}),
+                                                    "enc_input": [None],
+                                                    "enc_input_extend_vocab": [None],
+                                                    "article_oovs": [None],
+                                                    "dec_input": [max_dec_len],
+                                                    "target": [max_dec_len],
+                                                    "dec_len": [],
+                                                    "article": [],
+                                                    "abstract": [],
+                                                    "abstract_sents": [None],
+                                                    "sample_decoder_pad_mask": [max_dec_len],
+                                                    "sample_encoder_pad_mask": [None]}),
                                    padding_values={"enc_len": -1,
-                                                   "enc_input": 1,
-                                                   "enc_input_extend_vocab": 1,
-                                                   "article_oovs": b'',
-                                                   "dec_input": 1,
-                                                   "target": 1,
-                                                   "dec_len": -1,
-                                                   "article": b'',
-                                                   "abstract": b'',
-                                                   "abstract_sents": b'',
-                                                   "sample_decoder_pad_mask": 0,
-                                                   "sample_encoder_pad_mask": 0},
+                                                    "enc_input": 1,
+                                                    "enc_input_extend_vocab": 1,
+                                                    "article_oovs": b'',
+                                                    "dec_input": 1,
+                                                    "target": 1,
+                                                    "dec_len": -1,
+                                                    "article": b'',
+                                                    "abstract": b'',
+                                                    "abstract_sents": b'',
+                                                    "sample_decoder_pad_mask": 0,
+                                                    "sample_encoder_pad_mask": 0},
                                    drop_remainder=True)
 
     def update(entry):

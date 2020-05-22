@@ -12,18 +12,19 @@ def train_model(model, params, ckpt_mgr):
     dataset = batcher(vocab, params)
 
     optimizer = tf.keras.optimizers.Adam(params['learning_rate'])
-    loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False, reduction='none')
+    loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
     pad_token_index = vocab.pad_token_index
 
     def loss_function(real, pred):
         # [batch_size, dec_seq_len]
         mask = tf.math.not_equal(real, pad_token_index)
+        dec_lens = tf.reduce_sum(tf.cast(mask, dtype=tf.float32), axis=-1)
         # [batch_size, dec_seq_len]
         loss_ = loss_object(real, pred)
         mask = tf.cast(mask, dtype=loss_.dtype)
         loss_ *= mask
         # [batch_size,]
-        loss_ = tf.reduce_sum(loss_, axis=1)
+        loss_ = tf.reduce_sum(loss_, axis=-1)/dec_lens
         # []
         loss_ = tf.reduce_mean(loss_)
         return loss_
@@ -49,7 +50,7 @@ def train_model(model, params, ckpt_mgr):
             batch_loss = train_step(batch[0]["enc_input"],
                                     batch[1]["dec_target"],
                                     batch[1]["dec_input"])
-            # step += 1
+            step += 1
             total_loss += batch_loss
             # print loss every 100 steps
             if step % params['loss_print_step'] == 0:
@@ -57,12 +58,13 @@ def train_model(model, params, ckpt_mgr):
 
         # saving (checkpoint) the model every 2 epochs
         if epoch % params['checkpoints_save_epochs'] == 0:
-            epoch_loss = total_loss/(step+1)
+            epoch_loss = total_loss/step
             if epoch_loss < best_loss:
                 best_loss = epoch_loss
             ckpt_save_path = ckpt_mgr.save()
             print(f'Saving check point for epoch {epoch+1} at {ckpt_save_path}, best loss {best_loss:.4f}')
             print(f'Epoch {epoch+1} Loss {epoch_loss:.4f}')
-        # lr = params['learning_rate'] * tf.math.pow(0.9, epoch+1)
+        lr = params['learning_rate'] * tf.math.pow(0.9, epoch+1)
+        optimizer = tf.keras.optimizers.Adam(name='Adam', learning_rate=lr)
         print(f'Time taken for 1 epoch {time.time()-t0} sec\n')
 
