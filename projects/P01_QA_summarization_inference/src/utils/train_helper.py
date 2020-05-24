@@ -64,7 +64,7 @@ def train_model(model, params, ckpt_mgr):
             ckpt_save_path = ckpt_mgr.save()
             print(f'Saving check point for epoch {epoch+1} at {ckpt_save_path}, best loss {best_loss:.4f}')
             print(f'Epoch {epoch+1} Loss {epoch_loss:.4f}')
-        lr = params['learning_rate'] * tf.math.pow(0.9, epoch+1)
-        optimizer = tf.keras.optimizers.Adam(name='Adam', learning_rate=lr)
+        # lr = params['learning_rate'] * tf.math.pow(0.9, epoch+1)
+        # optimizer = tf.keras.optimizers.Adam(name='Adam', learning_rate=lr)
         print(f'Time taken for 1 epoch {time.time()-t0} sec\n')
 

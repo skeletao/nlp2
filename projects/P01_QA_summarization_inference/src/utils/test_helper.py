@@ -55,10 +55,11 @@ def batch_greedy_decode(model, enc_data, vocab, params):
         dec_input = tf.expand_dims(predicted_ids, 1)
 
     results = []
+    stop_token = vocab.id_to_word(vocab.stop_token_index)
+    stop_token_len = len(stop_token)
     for predict in predicts:
         predict = predict.strip()
-        stop_token = vocab.id_to_word(vocab.stop_token_index)
-        if stop_token in predict:
+        if stop_token in predict and predict[0:stop_token_len] != stop_token:
             predict = predict[:predict.index(stop_token)]
         results.append(predict)
 
