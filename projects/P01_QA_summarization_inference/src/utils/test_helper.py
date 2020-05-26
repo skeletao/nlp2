@@ -19,11 +19,12 @@ def greedy_decode(model, params):
     test_size = params['num_to_test']
     steps = math.ceil(test_size/batch_size)
 
+    t0 = time.time()
     for _ in tqdm(range(steps)):
-        t0 = time.time()
         enc_data, _ = next(iter(dataset))
         results += batch_greedy_decode(model, enc_data, vocab, params)
-        # print(f'Time taken for 1 step {time.time()-t0} sec\n')
+
+    print(f'Time taken {time.time()-t0} seconds for {steps} steps\n')
     return results
 
 

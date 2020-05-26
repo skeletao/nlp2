@@ -52,10 +52,10 @@ def test(params):
 
 def save_results(results, params):
     # read file
-    test_df = pd.read_csv(params['test_x_dir'], nrows=len(results))
+    test_df = pd.read_csv(params['test_x_dir'], nrows=params['num_to_test'])
 
     # write results
-    test_df['Prediction'] = results
+    test_df['Prediction'] = results[:params['num_to_test']]
 
     # extract 'QID' and 'Prediction'
     test_df = test_df[['QID', 'Prediction']]

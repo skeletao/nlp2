@@ -44,13 +44,19 @@ def get_result_filename(params, commit=''):
 
 
 def load_word2vec(params):
-    vocab = Vocab(params['vocab_path'], params['vocab_size'])
-    embedding = load_pkl(params['word2vec_output'])
-    embedding_dim = len(next(iter(embedding.values())))
-    embedding_matrix = np.random.uniform(-0.25, 0.25, (len(vocab.word2id), embedding_dim))
-    for w, i in vocab.word2id.items():
-        if w in embedding:
-            embedding_matrix[i] = embedding[w]
+    if not os.path.exists(params['embedding_matrix_path']):
+        print(f"Generate embedding from {params['word2vec_output']}")
+        vocab = Vocab(params['vocab_path'], params['vocab_size'])
+        embedding = load_pkl(params['word2vec_output'])
+        embedding_dim = len(next(iter(embedding.values())))
+        embedding_matrix = np.random.uniform(-0.01, 0.01, (len(vocab.word2id), embedding_dim))
+        for w, i in vocab.word2id.items():
+            if w in embedding:
+                embedding_matrix[i] = embedding[w]
+        dump_pkl(embedding_matrix, params['embedding_matrix_path'])
+    else:
+        print(f"Load from existed matrix: {params['embedding_matrix_path']}")
+        embedding_matrix = load_pkl(params['embedding_matrix_path'])
     return embedding_matrix
 
 
